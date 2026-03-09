@@ -2,10 +2,10 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import pickle
-import tensorflow as tf
+import onnxruntime as ort
 from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 
-# ── Page config ──────────────────────────────────────────────────────────────
+# ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Churn Predictor",
     page_icon="📉",
@@ -19,7 +19,6 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
 
 html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
-
 .stApp { background-color: #0d0f14; color: #e2e8f0; }
 
 [data-testid="stSidebar"] {
@@ -44,7 +43,6 @@ input[type="number"], input[type="text"] {
     border: 1px solid #2d3347 !important;
     border-radius: 6px !important;
 }
-
 [data-baseweb="select"] {
     background-color: #1a1e2b !important;
     border: 1px solid #2d3347 !important;
@@ -111,10 +109,8 @@ input[type="number"], input[type="text"] {
     border-bottom: 1px solid #1e2330;
     margin-bottom: 1rem;
 }
-
 .app-title { font-size: 1.9rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; }
 .app-subtitle { font-size: 0.9rem; color: #64748b; margin-top: 0.25rem; }
-
 hr { border-color: #1e2330; }
 
 .gauge-bar {
@@ -140,21 +136,20 @@ hr { border-color: #1e2330; }
 # ── Load model & encoders ─────────────────────────────────────────────────────
 @st.cache_resource
 def load_assets():
-    model = tf.keras.models.load_model('model.h5')
+    session = ort.InferenceSession('model.onnx')
     with open('label_encoder_gender.pkl', 'rb') as f:
         le_gender = pickle.load(f)
     with open('onehot_encoder_geo.pkl', 'rb') as f:
         ohe_geo = pickle.load(f)
     with open('scaler.pkl', 'rb') as f:
         scaler = pickle.load(f)
-    return model, le_gender, ohe_geo, scaler
+    return session, le_gender, ohe_geo, scaler
 
-model, label_encoder_gender, onehot_encoder_geo, scaler = load_assets()
+session, label_encoder_gender, onehot_encoder_geo, scaler = load_assets()
 
 # ── Sidebar inputs ────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 📋 Customer Profile")
-
     st.markdown("## 🌍 Demographics")
     geography = st.selectbox("Geography", onehot_encoder_geo.categories_[0])
     gender = st.selectbox("Gender", label_encoder_gender.classes_)
@@ -192,9 +187,10 @@ input_data = pd.DataFrame({
 geo_encoded = onehot_encoder_geo.transform([[geography]]).toarray()
 geo_encoded_df = pd.DataFrame(geo_encoded, columns=onehot_encoder_geo.get_feature_names_out(['Geography']))
 input_data = pd.concat([input_data.reset_index(drop=True), geo_encoded_df], axis=1)
-input_data_scaled = scaler.transform(input_data)
+input_data_scaled = scaler.transform(input_data).astype(np.float32)
 
-prediction = model.predict(input_data_scaled)
+input_name = session.get_inputs()[0].name
+prediction = session.run(None, {input_name: input_data_scaled})[0]
 prob = float(prediction[0][0])
 will_churn = prob > 0.5
 risk_pct = int(prob * 100)
@@ -261,7 +257,7 @@ else:
         </div>
     </div>""", unsafe_allow_html=True)
 
-# ── Input summary ─────────────────────────────────────────────────────────────
+# Input summary
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="section-header">Input Summary</div>', unsafe_allow_html=True)
 
@@ -273,7 +269,6 @@ summary_items = [
     ("Products", num_of_products), ("Credit Card", "Yes" if has_cr_card else "No"),
     ("Active Member", "Yes" if is_active_member else "No"),
 ]
-
 half = len(summary_items) // 2
 with c1:
     for k, v in summary_items[:half]:
