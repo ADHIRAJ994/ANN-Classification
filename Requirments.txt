@@ -1,7 +1,5 @@
 streamlit
-tensorflow-cpu==2.15.0
-pandas
 numpy
+pandas
 scikit-learn
-matplotlib
-seaborn
+tf-keras
