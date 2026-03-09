@@ -1,9 +1,27 @@
 import streamlit as st
 import numpy as np
-import tensorflow as tf
-from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 import pandas as pd
 import pickle
+from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
+
+# Graceful import: try standalone keras first, then tf.keras, then tf-keras
+try:
+    import keras
+    load_model = keras.models.load_model
+except ImportError:
+    try:
+        from tensorflow import keras
+        load_model = keras.models.load_model
+    except ImportError:
+        try:
+            import tf_keras as keras
+            load_model = keras.models.load_model
+        except ImportError:
+            st.error(
+                "❌ No Keras backend found. Add one of these to your `requirements.txt`:\n\n"
+                "```\ntf-keras\n```\nor\n```\ntensorflow-cpu\n```"
+            )
+            st.stop()
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -186,7 +204,7 @@ hr { border-color: #1e2330; }
 # ── Load model & encoders ─────────────────────────────────────────────────────
 @st.cache_resource
 def load_assets():
-    model = tf.keras.models.load_model('model.h5')
+    model = load_model('model.h5')
     with open('label_encoder_gender.pkl', 'rb') as f:
         le_gender = pickle.load(f)
     with open('onehot_encoder_geo.pkl', 'rb') as f:
