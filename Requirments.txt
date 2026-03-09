@@ -1,5 +1,7 @@
-tensorflow-cpu==2.13.0
-scikit-learn
+streamlit
+tensorflow-cpu==2.15.0
 pandas
 numpy
-streamlit
+scikit-learn
+matplotlib
+seaborn
