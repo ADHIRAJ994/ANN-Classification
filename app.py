@@ -10,6 +10,7 @@ st.set_page_config(
     page_title="Churn Predictor",
     page_icon="📉",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 # ── Custom CSS ────────────────────────────────────────────────────────────────
@@ -20,38 +21,46 @@ st.markdown("""
 html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
 .stApp { background-color: #0d0f14; color: #e2e8f0; }
 
-input[type="number"], input[type="text"] {
-    background-color: #1a1e2b !important;
-    color: #e2e8f0 !important;
-    border: 1px solid #2d3347 !important;
-    border-radius: 6px !important;
+[data-testid="stSidebar"] {
+    background-color: #111318;
+    border-right: 1px solid #1e2330;
+    min-width: 300px !important;
+    max-width: 300px !important;
 }
-[data-baseweb="select"] {
-    background-color: #1a1e2b !important;
-    border: 1px solid #2d3347 !important;
-    border-radius: 6px !important;
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 1.5rem;
 }
-[data-baseweb="select"] * {
-    background-color: #1a1e2b !important;
-    color: #e2e8f0 !important;
-}
+/* Force sidebar open, hide collapse button */
+[data-testid="collapsedControl"] { display: none !important; }
+[data-testid="stSidebarCollapseButton"] { display: none !important; }
 
-.input-card {
-    background: linear-gradient(135deg, #141824 0%, #1a1f2e 100%);
-    border: 1px solid #1e2a3a;
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-}
-.input-card-title {
-    font-size: 0.65rem;
+[data-testid="stSidebar"] .stMarkdown h2 {
+    color: #7dd3fc;
+    font-size: 0.7rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #7dd3fc;
     font-weight: 600;
-    margin-bottom: 1rem;
-    padding-bottom: 0.4rem;
+    margin-top: 1.25rem;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.35rem;
     border-bottom: 1px solid #1e2330;
+}
+
+/* Style all selectboxes in sidebar */
+[data-testid="stSidebar"] [data-baseweb="select"] {
+    background-color: #1a1e2b !important;
+    border: 1px solid #2d3347 !important;
+    border-radius: 6px !important;
+}
+[data-testid="stSidebar"] [data-baseweb="select"] * {
+    background-color: #1a1e2b !important;
+    color: #e2e8f0 !important;
+}
+[data-testid="stSidebar"] input {
+    background-color: #1a1e2b !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #2d3347 !important;
+    border-radius: 6px !important;
 }
 
 .metric-card {
@@ -81,8 +90,8 @@ input[type="number"], input[type="text"] {
 
 .result-banner {
     border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    margin-top: 1rem;
+    padding: 1.5rem 2rem;
+    margin-top: 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -95,10 +104,10 @@ input[type="number"], input[type="text"] {
     background: linear-gradient(135deg, #0d2318 0%, #0f1f1a 100%);
     border: 1px solid #14532d;
 }
-.result-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+.result-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.2rem; }
 .result-title.churn { color: #fca5a5; }
 .result-title.safe  { color: #6ee7b7; }
-.result-subtitle { font-size: 0.82rem; color: #94a3b8; }
+.result-subtitle { font-size: 0.85rem; color: #94a3b8; }
 
 .section-header {
     font-size: 0.7rem;
@@ -111,7 +120,7 @@ input[type="number"], input[type="text"] {
     margin-bottom: 1rem;
 }
 .app-title { font-size: 1.9rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; }
-.app-subtitle { font-size: 0.9rem; color: #64748b; margin-top: 0.25rem; margin-bottom: 1.5rem; }
+.app-subtitle { font-size: 0.9rem; color: #64748b; margin-top: 0.25rem; }
 
 .gauge-bar {
     height: 8px;
@@ -147,37 +156,35 @@ def load_assets():
 
 session, label_encoder_gender, onehot_encoder_geo, scaler = load_assets()
 
-# ── Title ─────────────────────────────────────────────────────────────────────
-st.markdown('<div class="app-title">📉 Churn Predictor</div>', unsafe_allow_html=True)
-st.markdown('<div class="app-subtitle">Machine learning model to identify at-risk customers</div>', unsafe_allow_html=True)
+# ── Sidebar — all selectboxes ─────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("## 📋 Customer Profile")
 
-# ── Input section (inline, 3 columns) ────────────────────────────────────────
-st.markdown('<div class="section-header">Customer Profile</div>', unsafe_allow_html=True)
-
-col_a, col_b, col_c = st.columns(3)
-
-with col_a:
-    st.markdown('<div class="input-card"><div class="input-card-title">🌍 Demographics</div>', unsafe_allow_html=True)
+    st.markdown("## 🌍 Demographics")
     geography = st.selectbox("Geography", onehot_encoder_geo.categories_[0])
     gender = st.selectbox("Gender", label_encoder_gender.classes_)
-    age = st.slider("Age", 18, 92, 35)
-    st.markdown('</div>', unsafe_allow_html=True)
+    age = st.selectbox("Age", list(range(18, 93)), index=17)
 
-with col_b:
-    st.markdown('<div class="input-card"><div class="input-card-title">💰 Financials</div>', unsafe_allow_html=True)
-    credit_score = st.number_input("Credit Score", min_value=300, max_value=900, value=650, step=1)
-    balance = st.number_input("Account Balance ($)", min_value=0.0, value=50000.0, step=100.0, format="%.2f")
-    estimated_salary = st.number_input("Estimated Salary ($)", min_value=0.0, value=60000.0, step=1000.0, format="%.2f")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("## 💰 Financials")
+    credit_score = st.selectbox("Credit Score", list(range(300, 901, 10)), index=35)
+    balance = st.selectbox("Account Balance ($)",
+        [0, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000,
+         90000, 100000, 125000, 150000, 175000, 200000, 250000],
+        index=5)
+    estimated_salary = st.selectbox("Estimated Salary ($)",
+        [10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000,
+         90000, 100000, 120000, 150000, 175000, 200000],
+        index=5)
 
-with col_c:
-    st.markdown('<div class="input-card"><div class="input-card-title">🏦 Account Details</div>', unsafe_allow_html=True)
-    tenure = st.slider("Tenure (years)", 0, 10, 5)
-    num_of_products = st.slider("Number of Products", 1, 4, 1)
+    st.markdown("## 🏦 Account Details")
+    tenure = st.selectbox("Tenure (years)", list(range(0, 11)), index=5)
+    num_of_products = st.selectbox("Number of Products", [1, 2, 3, 4])
     has_cr_card = st.selectbox("Has Credit Card", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
     is_active_member = st.selectbox("Active Member", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
-    st.markdown('</div>', unsafe_allow_html=True)
 
+# ── Main area ─────────────────────────────────────────────────────────────────
+st.markdown('<div class="app-title">📉 Churn Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="app-subtitle">Machine learning model to identify at-risk customers</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Prediction ────────────────────────────────────────────────────────────────
@@ -205,8 +212,6 @@ will_churn = prob > 0.5
 risk_pct = int(prob * 100)
 
 # ── Results ───────────────────────────────────────────────────────────────────
-st.markdown('<div class="section-header">Prediction Results</div>', unsafe_allow_html=True)
-
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -267,6 +272,26 @@ else:
             <div class="result-subtitle">This customer has only a {prob:.1%} probability of churning. Continue standard engagement practices.</div>
         </div>
     </div>""", unsafe_allow_html=True)
+
+# Input summary
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="section-header">Input Summary</div>', unsafe_allow_html=True)
+
+c1, c2 = st.columns(2)
+summary_items = [
+    ("Geography", geography), ("Gender", gender), ("Age", age),
+    ("Tenure", f"{tenure} yrs"), ("Credit Score", f"{credit_score:,}"),
+    ("Balance", f"${balance:,.2f}"), ("Est. Salary", f"${estimated_salary:,.2f}"),
+    ("Products", num_of_products), ("Credit Card", "Yes" if has_cr_card else "No"),
+    ("Active Member", "Yes" if is_active_member else "No"),
+]
+half = len(summary_items) // 2
+with c1:
+    for k, v in summary_items[:half]:
+        st.markdown(f"<div style='display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1e2330;font-size:0.85rem;'><span style='color:#64748b;'>{k}</span><span style='color:#e2e8f0;font-weight:600;'>{v}</span></div>", unsafe_allow_html=True)
+with c2:
+    for k, v in summary_items[half:]:
+        st.markdown(f"<div style='display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1e2330;font-size:0.85rem;'><span style='color:#64748b;'>{k}</span><span style='color:#e2e8f0;font-weight:600;'>{v}</span></div>", unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 st.markdown("<div style='color:#334155; font-size:0.75rem; text-align:center;'>Powered by a neural network trained on bank customer data · Predictions are probabilistic, not deterministic</div>", unsafe_allow_html=True)
