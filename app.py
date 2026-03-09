@@ -2,26 +2,8 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import pickle
+import tensorflow as tf
 from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
-
-# Graceful import: try standalone keras first, then tf.keras, then tf-keras
-try:
-    import keras
-    load_model = keras.models.load_model
-except ImportError:
-    try:
-        from tensorflow import keras
-        load_model = keras.models.load_model
-    except ImportError:
-        try:
-            import tf_keras as keras
-            load_model = keras.models.load_model
-        except ImportError:
-            st.error(
-                "❌ No Keras backend found. Add one of these to your `requirements.txt`:\n\n"
-                "```\ntf-keras\n```\nor\n```\ntensorflow-cpu\n```"
-            )
-            st.stop()
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -36,18 +18,10 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
 
-/* Global */
-html, body, [class*="css"] {
-    font-family: 'IBM Plex Sans', sans-serif;
-}
+html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
 
-/* Background */
-.stApp {
-    background-color: #0d0f14;
-    color: #e2e8f0;
-}
+.stApp { background-color: #0d0f14; color: #e2e8f0; }
 
-/* Sidebar */
 [data-testid="stSidebar"] {
     background-color: #111318;
     border-right: 1px solid #1e2330;
@@ -64,16 +38,6 @@ html, body, [class*="css"] {
     border-bottom: 1px solid #1e2330;
 }
 
-/* Sliders & inputs */
-[data-testid="stSlider"] > div > div > div {
-    background: #1e2330 !important;
-}
-[data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
-    background: #38bdf8 !important;
-    border-color: #38bdf8 !important;
-}
-
-/* Number inputs */
 input[type="number"], input[type="text"] {
     background-color: #1a1e2b !important;
     color: #e2e8f0 !important;
@@ -81,7 +45,6 @@ input[type="number"], input[type="text"] {
     border-radius: 6px !important;
 }
 
-/* Select boxes */
 [data-baseweb="select"] {
     background-color: #1a1e2b !important;
     border: 1px solid #2d3347 !important;
@@ -92,7 +55,6 @@ input[type="number"], input[type="text"] {
     color: #e2e8f0 !important;
 }
 
-/* Metric cards */
 .metric-card {
     background: linear-gradient(135deg, #141824 0%, #1a1f2e 100%);
     border: 1px solid #1e2a3a;
@@ -118,7 +80,6 @@ input[type="number"], input[type="text"] {
 .metric-value.safe  { color: #34d399; }
 .metric-value.prob  { color: #7dd3fc; }
 
-/* Result banner */
 .result-banner {
     border-radius: 12px;
     padding: 1.5rem 2rem;
@@ -135,24 +96,11 @@ input[type="number"], input[type="text"] {
     background: linear-gradient(135deg, #0d2318 0%, #0f1f1a 100%);
     border: 1px solid #14532d;
 }
-.result-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.2rem;
-}
+.result-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.2rem; }
 .result-title.churn { color: #fca5a5; }
 .result-title.safe  { color: #6ee7b7; }
-.result-subtitle {
-    font-size: 0.85rem;
-    color: #94a3b8;
-}
+.result-subtitle { font-size: 0.85rem; color: #94a3b8; }
 
-/* Progress bar override */
-.stProgress > div > div > div > div {
-    background: linear-gradient(90deg, #38bdf8, #818cf8) !important;
-}
-
-/* Section headers */
 .section-header {
     font-size: 0.7rem;
     letter-spacing: 0.12em;
@@ -164,23 +112,11 @@ input[type="number"], input[type="text"] {
     margin-bottom: 1rem;
 }
 
-/* Title */
-.app-title {
-    font-size: 1.9rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    letter-spacing: -0.02em;
-}
-.app-subtitle {
-    font-size: 0.9rem;
-    color: #64748b;
-    margin-top: 0.25rem;
-}
+.app-title { font-size: 1.9rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; }
+.app-subtitle { font-size: 0.9rem; color: #64748b; margin-top: 0.25rem; }
 
-/* Divider */
 hr { border-color: #1e2330; }
 
-/* Risk gauge */
 .gauge-bar {
     height: 8px;
     border-radius: 4px;
@@ -204,7 +140,7 @@ hr { border-color: #1e2330; }
 # ── Load model & encoders ─────────────────────────────────────────────────────
 @st.cache_resource
 def load_assets():
-    model = load_model('model.h5')
+    model = tf.keras.models.load_model('model.h5')
     with open('label_encoder_gender.pkl', 'rb') as f:
         le_gender = pickle.load(f)
     with open('onehot_encoder_geo.pkl', 'rb') as f:
@@ -234,8 +170,6 @@ with st.sidebar:
     num_of_products = st.slider("Number of Products", 1, 4, 1)
     has_cr_card = st.selectbox("Has Credit Card", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
     is_active_member = st.selectbox("Active Member", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
-
-    predict_btn = st.button("🔍 Run Prediction", use_container_width=True, type="primary")
 
 # ── Main area ─────────────────────────────────────────────────────────────────
 st.markdown('<div class="app-title">📉 Churn Predictor</div>', unsafe_allow_html=True)
@@ -327,7 +261,7 @@ else:
         </div>
     </div>""", unsafe_allow_html=True)
 
-# ── Feature summary ───────────────────────────────────────────────────────────
+# ── Input summary ─────────────────────────────────────────────────────────────
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="section-header">Input Summary</div>', unsafe_allow_html=True)
 
