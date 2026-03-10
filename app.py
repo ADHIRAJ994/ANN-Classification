@@ -175,14 +175,27 @@ html, body, [class*="css"] {
     color: var(--text) !important;
     background: transparent !important;
 }
-[data-baseweb="popover"] {
-    background: rgba(15,12,40,0.95) !important;
+[data-baseweb="popover"],
+[data-baseweb="popover"] > div,
+[data-baseweb="popover"] > div > div,
+[data-baseweb="menu"],
+[data-baseweb="menu"] > ul {
+    background: #151929 !important;
     backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
+    border: 1px solid rgba(139,92,246,0.25) !important;
     border-radius: 12px !important;
 }
-[role="option"] { color: var(--dim) !important; }
-[role="option"]:hover { background: rgba(139,92,246,0.15) !important; color: white !important; }
+[role="option"] {
+    color: #c8d4f0 !important;
+    background: #151929 !important;
+    padding: 0.55rem 1rem !important;
+    font-size: 0.85rem !important;
+}
+[role="option"]:hover,
+[role="option"][aria-selected="true"] {
+    background: rgba(139,92,246,0.2) !important;
+    color: white !important;
+}
 label {
     color: var(--muted) !important;
     font-size: 0.7rem !important;
