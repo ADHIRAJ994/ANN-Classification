@@ -191,6 +191,19 @@ label {
     text-transform: uppercase !important;
 }
 
+input[type="number"] {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 10px !important;
+    color: var(--text) !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 0.85rem !important;
+}
+input[type="number"]:hover {
+    border-color: rgba(139,92,246,0.4) !important;
+    background: rgba(255,255,255,0.08) !important;
+}
+
 /* ── Result glass card ── */
 .result-glass {
     background: rgba(255,255,255,0.04);
@@ -401,22 +414,22 @@ st.markdown('<div class="g-card"><div class="g-card-title">🌍 Demographics</di
 c1, c2, c3 = st.columns(3)
 with c1: geography = st.selectbox("Geography", onehot_encoder_geo.categories_[0])
 with c2: gender = st.selectbox("Gender", label_encoder_gender.classes_)
-with c3: age = st.selectbox("Age", list(range(18, 93)), index=17)
+with c3: age = st.number_input("Age", min_value=18, max_value=92, value=35, step=1)
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<div class="g-card"><div class="g-card-title">💳 Financials</div>', unsafe_allow_html=True)
 c4, c5, c6 = st.columns(3)
-with c4: credit_score = st.selectbox("Credit Score", list(range(300, 901, 10)), index=35)
-with c5: balance = st.selectbox("Balance ($)", [0,10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,125000,150000,200000,250000], index=5)
-with c6: estimated_salary = st.selectbox("Est. Salary ($)", [10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,120000,150000,200000], index=5)
+with c4: credit_score = st.number_input("Credit Score", min_value=300, max_value=900, value=650, step=1)
+with c5: balance = st.number_input("Balance ($)", min_value=0.0, value=50000.0, step=500.0, format="%.2f")
+with c6: estimated_salary = st.number_input("Est. Salary ($)", min_value=0.0, value=60000.0, step=1000.0, format="%.2f")
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<div class="g-card"><div class="g-card-title">🏦 Account</div>', unsafe_allow_html=True)
 c7, c8, c9, c10 = st.columns(4)
-with c7:  tenure = st.selectbox("Tenure (yrs)", list(range(0, 11)), index=5)
-with c8:  num_of_products = st.selectbox("Products", [1, 2, 3, 4])
-with c9:  has_cr_card = st.selectbox("Credit Card", [0,1], format_func=lambda x: "Yes" if x else "No")
-with c10: is_active_member = st.selectbox("Active", [0,1], format_func=lambda x: "Yes" if x else "No")
+with c7:  tenure = st.number_input("Tenure (yrs)", min_value=0, max_value=10, value=5, step=1)
+with c8:  num_of_products = st.number_input("Products", min_value=1, max_value=4, value=1, step=1)
+with c9:  has_cr_card = st.selectbox("Credit Card", [0, 1], format_func=lambda x: "Yes" if x else "No")
+with c10: is_active_member = st.selectbox("Active Member", [0, 1], format_func=lambda x: "Yes" if x else "No")
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ── Prediction ────────────────────────────────────────────────────────────────
