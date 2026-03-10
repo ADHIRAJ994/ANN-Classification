@@ -30,9 +30,9 @@ html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
 [data-testid="stSidebar"] > div:first-child {
     padding-top: 1.5rem;
 }
-/* Force sidebar open, hide collapse button */
-[data-testid="collapsedControl"] { display: none !important; }
-[data-testid="stSidebarCollapseButton"] { display: none !important; }
+
+
+
 
 [data-testid="stSidebar"] .stMarkdown h2 {
     color: #7dd3fc;
