@@ -426,7 +426,7 @@ st.markdown("""
 st.markdown('<div class="g-card"><div class="g-card-title">🌍 Demographics</div>', unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 with c1: geography = st.selectbox("Geography", onehot_encoder_geo.categories_[0])
-with c2: gender = st.selectbox("Gender", label_encoder_gender.classes_)
+with c2: gender = st.selectbox("Gender", ["Male", "Female"])
 with c3: age = st.number_input("Age", min_value=18, max_value=92, value=35, step=1)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -448,7 +448,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # ── Prediction ────────────────────────────────────────────────────────────────
 input_data = pd.DataFrame({
     'CreditScore': [credit_score],
-    'Gender': [label_encoder_gender.transform([gender])[0]],
+    'Gender': [1 if gender == 'Female' else 0],
     'Age': [age], 'Tenure': [tenure], 'Balance': [balance],
     'NumOfProducts': [num_of_products], 'HasCrCard': [has_cr_card],
     'IsActiveMember': [is_active_member], 'EstimatedSalary': [estimated_salary],
