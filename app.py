@@ -8,139 +8,233 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 st.set_page_config(
     page_title="Churn Predictor",
     page_icon="📉",
-    layout="wide",
+    layout="centered",
 )
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap');
 
-html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
-.stApp { background-color: #0d0f14; color: #e2e8f0; }
+:root {
+    --bg:       #080b10;
+    --surface:  #0f1318;
+    --border:   #1c2333;
+    --accent:   #3b82f6;
+    --accent2:  #06b6d4;
+    --muted:    #4b5675;
+    --text:     #e2e8f0;
+    --green:    #10b981;
+    --red:      #ef4444;
+    --yellow:   #f59e0b;
+}
 
-/* Hide sidebar entirely */
-[data-testid="stSidebar"] { display: none !important; }
+html, body, [class*="css"] {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--bg) !important;
+    color: var(--text);
+}
+.stApp { background-color: var(--bg) !important; }
+
+/* Hide sidebar & hamburger */
+[data-testid="stSidebar"],
 [data-testid="collapsedControl"] { display: none !important; }
 
-input[type="number"], input[type="text"] {
-    background-color: #1a1e2b !important;
-    color: #e2e8f0 !important;
-    border: 1px solid #2d3347 !important;
-    border-radius: 6px !important;
-}
-[data-baseweb="select"] {
-    background-color: #1a1e2b !important;
-    border: 1px solid #2d3347 !important;
-    border-radius: 6px !important;
-}
-[data-baseweb="select"] * {
-    background-color: #1a1e2b !important;
-    color: #e2e8f0 !important;
+/* Center content with max width */
+.block-container {
+    max-width: 780px !important;
+    padding: 2.5rem 1.5rem 4rem !important;
 }
 
-.panel {
-    background: #111318;
-    border: 1px solid #1e2330;
-    border-radius: 14px;
-    padding: 1.25rem 1.25rem 1.5rem 1.25rem;
-    height: 100%;
-}
-.panel-section {
+/* Header */
+.header { margin-bottom: 2.5rem; }
+.header-eyebrow {
+    font-family: 'DM Mono', monospace;
     font-size: 0.65rem;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #7dd3fc;
-    font-weight: 600;
-    margin-top: 1.1rem;
+    color: var(--accent2);
     margin-bottom: 0.5rem;
-    padding-bottom: 0.3rem;
-    border-bottom: 1px solid #1e2330;
 }
-.panel-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 1rem;
-    letter-spacing: -0.01em;
-}
-
-.metric-card {
-    background: linear-gradient(135deg, #141824 0%, #1a1f2e 100%);
-    border: 1px solid #1e2a3a;
-    border-radius: 12px;
-    padding: 1.25rem;
-    text-align: center;
-    margin-bottom: 0.75rem;
-}
-.metric-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #64748b;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-}
-.metric-value {
-    font-family: 'IBM Plex Mono', monospace;
+.header-title {
     font-size: 2.2rem;
-    font-weight: 600;
-    line-height: 1;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
 }
-.metric-value.churn { color: #f87171; }
-.metric-value.safe  { color: #34d399; }
-.metric-value.prob  { color: #7dd3fc; }
+.header-sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+}
 
-.result-banner {
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    margin-top: 0.75rem;
+/* Section label */
+.field-section {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1.75rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Selectbox overrides */
+[data-baseweb="select"] > div {
+    background-color: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--text) !important;
+}
+[data-baseweb="select"] * { color: var(--text) !important; }
+[data-baseweb="popover"] { background-color: #131820 !important; border: 1px solid var(--border) !important; }
+[role="option"]:hover { background-color: #1c2535 !important; }
+label { color: var(--muted) !important; font-size: 0.78rem !important; }
+
+/* Divider */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+}
+
+/* Result card */
+.result-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 0.5rem;
+}
+.result-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
 }
-.result-banner.churn {
-    background: linear-gradient(135deg, #2d1515 0%, #1f1220 100%);
-    border: 1px solid #7f1d1d;
+.result-verdict {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
-.result-banner.safe {
-    background: linear-gradient(135deg, #0d2318 0%, #0f1f1a 100%);
-    border: 1px solid #14532d;
+.verdict-safe  { color: var(--green); }
+.verdict-churn { color: var(--red); }
+.result-prob {
+    font-family: 'DM Mono', monospace;
+    font-size: 2.8rem;
+    font-weight: 500;
+    line-height: 1;
 }
-.result-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.15rem; }
-.result-title.churn { color: #fca5a5; }
-.result-title.safe  { color: #6ee7b7; }
-.result-subtitle { font-size: 0.8rem; color: #94a3b8; }
-
-.section-header {
+.prob-safe  { color: var(--green); }
+.prob-churn { color: var(--red); }
+.prob-label {
     font-size: 0.65rem;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #475569;
-    font-weight: 600;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid #1e2330;
-    margin-bottom: 0.85rem;
-    margin-top: 1.25rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    text-align: right;
 }
-.app-title { font-size: 1.75rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; }
-.app-subtitle { font-size: 0.85rem; color: #64748b; margin-top: 0.2rem; margin-bottom: 1.25rem; }
 
-.gauge-bar {
-    height: 8px;
-    border-radius: 4px;
-    background: linear-gradient(90deg, #34d399 0%, #facc15 50%, #f87171 100%);
+/* Gauge */
+.gauge-track {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 50%, var(--red) 100%);
     position: relative;
-    margin: 0.6rem 0;
+    margin: 1.25rem 0 0.4rem;
 }
-.gauge-indicator {
+.gauge-dot {
     position: absolute;
-    top: -4px;
+    top: -5px;
     width: 16px;
     height: 16px;
     background: white;
     border-radius: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 0 3px #0d0f14, 0 0 0 5px white;
+    box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px white;
+}
+.gauge-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+}
+
+/* Risk badge */
+.risk-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.badge-low    { background: #052e16; color: var(--green); border: 1px solid #14532d; }
+.badge-medium { background: #1c1307; color: var(--yellow); border: 1px solid #78350f; }
+.badge-high   { background: #1c0a0a; color: var(--red);   border: 1px solid #7f1d1d; }
+
+/* Insight box */
+.insight {
+    background: #0a0f18;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin-top: 1.25rem;
+    line-height: 1.5;
+}
+
+/* Summary grid */
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-top: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+}
+.summary-row:nth-child(odd) { background: #0a0d13; }
+.summary-key { color: var(--muted); }
+.summary-val { color: var(--text); font-weight: 600; font-family: 'DM Mono', monospace; font-size: 0.75rem; }
+
+/* Predict button */
+.stButton > button {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.75rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    margin-top: 1.5rem !important;
+    cursor: pointer !important;
+    transition: opacity 0.2s !important;
+}
+.stButton > button:hover { opacity: 0.88 !important; }
+
+/* Footer */
+.footer {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #1e2535;
+    margin-top: 3rem;
+    font-family: 'DM Mono', monospace;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -158,45 +252,54 @@ def load_assets():
 
 session, label_encoder_gender, onehot_encoder_geo, scaler = load_assets()
 
-# ── Two-column layout: inputs left, results right ─────────────────────────────
-left, right = st.columns([1, 2], gap="large")
+# ── Header ────────────────────────────────────────────────────────────────────
+st.markdown("""
+<div class="header">
+    <div class="header-eyebrow">Customer Intelligence</div>
+    <div class="header-title">Churn Predictor</div>
+    <div class="header-sub">Fill in the customer details below to get an instant churn risk assessment.</div>
+</div>
+""", unsafe_allow_html=True)
 
-with left:
-    st.markdown('<div class="panel">', unsafe_allow_html=True)
-    st.markdown('<div class="panel-title">📋 Customer Profile</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="panel-section">🌍 Demographics</div>', unsafe_allow_html=True)
+# ── Inputs ────────────────────────────────────────────────────────────────────
+st.markdown('<div class="field-section">Demographics</div>', unsafe_allow_html=True)
+c1, c2, c3 = st.columns(3)
+with c1:
     geography = st.selectbox("Geography", onehot_encoder_geo.categories_[0])
+with c2:
     gender = st.selectbox("Gender", label_encoder_gender.classes_)
+with c3:
     age = st.selectbox("Age", list(range(18, 93)), index=17)
 
-    st.markdown('<div class="panel-section">💰 Financials</div>', unsafe_allow_html=True)
+st.markdown('<div class="field-section">Financials</div>', unsafe_allow_html=True)
+c4, c5, c6 = st.columns(3)
+with c4:
     credit_score = st.selectbox("Credit Score", list(range(300, 901, 10)), index=35)
-    balance = st.selectbox("Account Balance ($)",
-        [0, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000,
-         90000, 100000, 125000, 150000, 175000, 200000, 250000], index=5)
-    estimated_salary = st.selectbox("Estimated Salary ($)",
-        [10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000,
-         90000, 100000, 120000, 150000, 175000, 200000], index=5)
+with c5:
+    balance = st.selectbox("Balance ($)", [0,10000,20000,30000,40000,50000,60000,
+        70000,80000,90000,100000,125000,150000,175000,200000,250000], index=5)
+with c6:
+    estimated_salary = st.selectbox("Est. Salary ($)", [10000,20000,30000,40000,
+        50000,60000,70000,80000,90000,100000,120000,150000,175000,200000], index=5)
 
-    st.markdown('<div class="panel-section">🏦 Account Details</div>', unsafe_allow_html=True)
-    tenure = st.selectbox("Tenure (years)", list(range(0, 11)), index=5)
-    num_of_products = st.selectbox("Number of Products", [1, 2, 3, 4])
-    has_cr_card = st.selectbox("Has Credit Card", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
-    is_active_member = st.selectbox("Active Member", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
-    st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('<div class="field-section">Account Details</div>', unsafe_allow_html=True)
+c7, c8, c9, c10 = st.columns(4)
+with c7:
+    tenure = st.selectbox("Tenure (yrs)", list(range(0, 11)), index=5)
+with c8:
+    num_of_products = st.selectbox("Products", [1, 2, 3, 4])
+with c9:
+    has_cr_card = st.selectbox("Credit Card", [0, 1], format_func=lambda x: "Yes" if x else "No")
+with c10:
+    is_active_member = st.selectbox("Active Member", [0, 1], format_func=lambda x: "Yes" if x else "No")
 
 # ── Prediction ────────────────────────────────────────────────────────────────
 input_data = pd.DataFrame({
     'CreditScore': [credit_score],
     'Gender': [label_encoder_gender.transform([gender])[0]],
-    'Age': [age],
-    'Tenure': [tenure],
-    'Balance': [balance],
-    'NumOfProducts': [num_of_products],
-    'HasCrCard': [has_cr_card],
-    'IsActiveMember': [is_active_member],
-    'EstimatedSalary': [estimated_salary],
+    'Age': [age], 'Tenure': [tenure], 'Balance': [balance],
+    'NumOfProducts': [num_of_products], 'HasCrCard': [has_cr_card],
+    'IsActiveMember': [is_active_member], 'EstimatedSalary': [estimated_salary],
 })
 geo_encoded = onehot_encoder_geo.transform([[geography]]).toarray()
 geo_encoded_df = pd.DataFrame(geo_encoded, columns=onehot_encoder_geo.get_feature_names_out(['Geography']))
@@ -207,79 +310,63 @@ prediction = session.run(None, {input_name: input_data_scaled})[0]
 prob = float(prediction[0][0])
 will_churn = prob > 0.5
 risk_pct = int(prob * 100)
+risk_label = "High" if prob > 0.7 else ("Medium" if prob > 0.4 else "Low")
+badge_cls  = "badge-high" if prob > 0.7 else ("badge-medium" if prob > 0.4 else "badge-low")
+verdict_cls = "verdict-churn" if will_churn else "verdict-safe"
+prob_cls    = "prob-churn" if will_churn else "prob-safe"
+verdict_text = "Likely to Churn" if will_churn else "Likely to Retain"
+insight = (
+    f"This customer shows a <strong>{prob:.1%} churn probability</strong>. "
+    "Consider a proactive retention offer — a personalised discount or loyalty reward could reduce risk significantly."
+    if will_churn else
+    f"This customer shows a <strong>{prob:.1%} churn probability</strong>. "
+    "Low risk — continue standard engagement. Monitor quarterly for any changes in activity."
+)
 
-with right:
-    st.markdown('<div class="app-title">📉 Churn Predictor</div>', unsafe_allow_html=True)
-    st.markdown('<div class="app-subtitle">Machine learning model to identify at-risk customers</div>', unsafe_allow_html=True)
+# ── Results ───────────────────────────────────────────────────────────────────
+st.markdown("<hr class='divider'>", unsafe_allow_html=True)
 
-    # Metric cards
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        color_cls = "churn" if will_churn else "safe"
-        label = "LIKELY TO CHURN" if will_churn else "LIKELY TO RETAIN"
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-label">Prediction</div>
-            <div class="metric-value {color_cls}" style="font-size:1.1rem; margin-top:0.3rem;">{label}</div>
-        </div>""", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-label">Churn Probability</div>
-            <div class="metric-value prob">{prob:.1%}</div>
-        </div>""", unsafe_allow_html=True)
-    with c3:
-        risk_label = "High" if prob > 0.7 else ("Medium" if prob > 0.4 else "Low")
-        risk_color = "#f87171" if prob > 0.7 else ("#facc15" if prob > 0.4 else "#34d399")
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-label">Risk Level</div>
-            <div class="metric-value" style="color:{risk_color}; font-size:2rem;">{risk_label}</div>
-        </div>""", unsafe_allow_html=True)
-
-    # Gauge
-    st.markdown('<div class="section-header">Risk Gauge</div>', unsafe_allow_html=True)
-    left_pct = max(0, min(99, risk_pct))
-    st.markdown(f"""
-    <div class="gauge-bar">
-        <div class="gauge-indicator" style="left: {left_pct}%;"></div>
+left_pct = max(1, min(99, risk_pct))
+st.markdown(f"""
+<div class="result-wrap">
+    <div class="result-header">
+        <div>
+            <div class="result-verdict {verdict_cls}">{'⚠️' if will_churn else '✅'} {verdict_text}</div>
+            <div style="margin-top:0.5rem;">
+                <span class="risk-badge {badge_cls}">{risk_label} Risk</span>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div class="result-prob {prob_cls}">{prob:.1%}</div>
+            <div class="prob-label">Churn Probability</div>
+        </div>
     </div>
-    <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#475569; margin-top:4px;">
-        <span>Low Risk</span><span>Medium Risk</span><span>High Risk</span>
-    </div>""", unsafe_allow_html=True)
 
-    # Result banner
-    if will_churn:
-        st.markdown(f"""<div class="result-banner churn">
-            <span style="font-size:2rem;">⚠️</span>
-            <div>
-                <div class="result-title churn">High Churn Risk Detected</div>
-                <div class="result-subtitle">This customer has a {prob:.1%} probability of churning. Consider a targeted retention offer or outreach campaign.</div>
-            </div>
-        </div>""", unsafe_allow_html=True)
-    else:
-        st.markdown(f"""<div class="result-banner safe">
-            <span style="font-size:2rem;">✅</span>
-            <div>
-                <div class="result-title safe">Customer Likely to Stay</div>
-                <div class="result-subtitle">This customer has only a {prob:.1%} probability of churning. Continue standard engagement practices.</div>
-            </div>
-        </div>""", unsafe_allow_html=True)
+    <div class="gauge-track">
+        <div class="gauge-dot" style="left:{left_pct}%;"></div>
+    </div>
+    <div class="gauge-labels">
+        <span>0%</span><span>50%</span><span>100%</span>
+    </div>
 
-    # Input summary
-    st.markdown('<div class="section-header">Input Summary</div>', unsafe_allow_html=True)
-    s1, s2 = st.columns(2)
-    summary_items = [
-        ("Geography", geography), ("Gender", gender), ("Age", age),
-        ("Tenure", f"{tenure} yrs"), ("Credit Score", f"{credit_score:,}"),
-        ("Balance", f"${balance:,.2f}"), ("Est. Salary", f"${estimated_salary:,.2f}"),
-        ("Products", num_of_products), ("Credit Card", "Yes" if has_cr_card else "No"),
-        ("Active Member", "Yes" if is_active_member else "No"),
-    ]
-    half = len(summary_items) // 2
-    with s1:
-        for k, v in summary_items[:half]:
-            st.markdown(f"<div style='display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1e2330;font-size:0.82rem;'><span style='color:#64748b;'>{k}</span><span style='color:#e2e8f0;font-weight:600;'>{v}</span></div>", unsafe_allow_html=True)
-    with s2:
-        for k, v in summary_items[half:]:
-            st.markdown(f"<div style='display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1e2330;font-size:0.82rem;'><span style='color:#64748b;'>{k}</span><span style='color:#e2e8f0;font-weight:600;'>{v}</span></div>", unsafe_allow_html=True)
+    <div class="insight">{insight}</div>
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("<div style='color:#334155; font-size:0.72rem; text-align:center;'>Powered by a neural network trained on bank customer data · Predictions are probabilistic, not deterministic</div>", unsafe_allow_html=True)
+    <div style="margin-top:1.5rem;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Input Summary</div>
+        <div class="summary-grid">
+            <div class="summary-row"><span class="summary-key">Geography</span><span class="summary-val">{geography}</span></div>
+            <div class="summary-row"><span class="summary-key">Gender</span><span class="summary-val">{gender}</span></div>
+            <div class="summary-row"><span class="summary-key">Age</span><span class="summary-val">{age}</span></div>
+            <div class="summary-row"><span class="summary-key">Tenure</span><span class="summary-val">{tenure} yrs</span></div>
+            <div class="summary-row"><span class="summary-key">Credit Score</span><span class="summary-val">{credit_score:,}</span></div>
+            <div class="summary-row"><span class="summary-key">Balance</span><span class="summary-val">${balance:,.0f}</span></div>
+            <div class="summary-row"><span class="summary-key">Est. Salary</span><span class="summary-val">${estimated_salary:,.0f}</span></div>
+            <div class="summary-row"><span class="summary-key">Products</span><span class="summary-val">{num_of_products}</span></div>
+            <div class="summary-row"><span class="summary-key">Credit Card</span><span class="summary-val">{'Yes' if has_cr_card else 'No'}</span></div>
+            <div class="summary-row"><span class="summary-key">Active Member</span><span class="summary-val">{'Yes' if is_active_member else 'No'}</span></div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<div class='footer'>Powered by ANN · Predictions are probabilistic estimates</div>", unsafe_allow_html=True)
