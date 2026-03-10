@@ -477,6 +477,8 @@ insight_txt = (
     f"This customer has a low <strong>{prob:.1%} churn probability</strong>. Continue standard engagement. Re-evaluate quarterly or if account activity drops."
 )
 dot_pct = max(1, min(99, risk_pct))
+cr_card_display = 'Yes' if has_cr_card else 'No'
+active_display = 'Yes' if is_active_member else 'No'
 
 st.markdown(f"""
 <div class="result-glass {glow_cls}" style="margin-top:1.25rem;">
@@ -514,8 +516,8 @@ st.markdown(f"""
             <div class="sum-row"><span class="sk">Balance</span><span class="sv">${balance:,.0f}</span></div>
             <div class="sum-row"><span class="sk">Est. Salary</span><span class="sv">${estimated_salary:,.0f}</span></div>
             <div class="sum-row"><span class="sk">Products</span><span class="sv">{num_of_products}</span></div>
-            <div class="sum-row"><span class="sk">Credit Card</span><span class="sv">{'Yes' if has_cr_card else 'No'}</span></div>
-            <div class="sum-row"><span class="sk">Active Member</span><span class="sv">{'Yes' if is_active_member else 'No'}</span></div>
+            <div class="sum-row"><span class="sk">Credit Card</span><span class="sv">{cr_card_display}</span></div>
+            <div class="sum-row"><span class="sk">Active Member</span><span class="sv">{active_display}</span></div>
         </div>
     </div>
 </div>
